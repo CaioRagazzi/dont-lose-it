@@ -14,7 +14,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation';
 import * as ImagePicker from 'expo-image-picker';
 import { TextInput, Subheading, Switch } from 'react-native-paper';
-import { Avatar } from 'react-native-paper';
+import { Avatar, Snackbar } from 'react-native-paper';
 import Item from '../../models/item/Item';
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -41,21 +41,18 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
   const [dateRemind, setDateRemind] = useState('');
   const [hourRemind, setHourRemind] = useState('');
   const [latLng, setLatLng] = useState<string>('');
-  
+
   const [isSwitchGPSOn, setIsSwitchGPSOn] = React.useState(false);
   const [isSwitchRemindOn, setIsSwitchRemindOn] = React.useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showHourPicker, setShowHourPicker] = useState(false);
+  const [snackBarVisible, setSnackBarVisible] = useState(false);
+  const [snackBarMessage, setSnackBarMessage] = useState('');
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <TouchableOpacity
-          onPress={() => {
-            saveItem();
-            navigation.goBack();
-          }}
-        >
+        <TouchableOpacity onPress={() => saveItem()}>
           <AntDesign
             name="check"
             style={{ marginRight: 12 }}
@@ -65,11 +62,31 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
         </TouchableOpacity>
       ),
     });
-  }, [navigation]);
+  }, [
+    navigation,
+    title,
+    image,
+    notes,
+    dateRemind,
+    hourRemind,
+    latLng,
+    isSwitchGPSOn,
+    isSwitchRemindOn,
+    snackBarMessage,
+  ]);
 
   const saveItem = () => {
-    const item = new Item(title, image, notes);
-    item.insertItem();
+    if (isSwitchGPSOn && latLng === '') {
+      console.log('deu ruim no GPS');
+      return;
+    }
+    if (isSwitchRemindOn && (hourRemind === '' || dateRemind === '')) {
+      setSnackBarVisible(true);
+    }
+    console.log(title, image, notes, dateRemind, hourRemind, latLng);
+    // navigation.goBack();
+    // const item = new Item(title, image, notes);
+    // item.insertItem();
   };
 
   const checkPermissionAndTakePhoto = async () => {
@@ -89,21 +106,23 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
     }
   };
 
-  const handleSwitchLocation = () => {
+  const handleSwitchLocation = async () => {
     if (isSwitchGPSOn) {
       setIsSwitchGPSOn(false);
+      setLatLng('');
     } else {
       setIsSwitchGPSOn(true);
-      checkPermissionAndGetLocation();
+      await checkPermissionAndGetLocation();
     }
   };
 
   const checkPermissionAndGetLocation = async () => {
     let { status } = await Location.requestPermissionsAsync();
     if (status === 'granted') {
-      let location = await Location.getCurrentPositionAsync({});
-      const latituteLongitude = `${location.coords.latitude},${location.coords.longitude}`;
-      setLatLng(latituteLongitude);
+      await Location.getCurrentPositionAsync().then((location) => {
+        const latituteLongitude = `${location.coords.latitude},${location.coords.longitude}`;
+        setLatLng(latituteLongitude);
+      });
     }
   };
 
@@ -135,121 +154,151 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
     }
   };
 
+  const deleteImage = () => {
+    setImage('');
+  };
+
   return (
-    <KeyboardAvoidingView style={{ marginHorizontal: 10, marginVertical: 10 }}>
+    <KeyboardAvoidingView
+      style={{
+        marginHorizontal: 10,
+        marginVertical: 10,
+      }}
+    >
       <ScrollView>
-          <View style={image !== "" && { height: windowHeight * 0.35 }}>
-            {image === '' ? (
-              <TouchableOpacity
-                style={styles.avatarContainer}
-                onPress={() => checkPermissionAndTakePhoto()}
-              >
-                <Avatar.Text
-                  size={(windowWidth * 40) / 100}
-                  label={title ? title[0] : '?'}
-                />
-                <FontAwesome5
-                  name="camera"
-                  style={{
-                    alignSelf: 'flex-end',
-                    paddingLeft: 80,
-                    position: 'absolute',
-                  }}
-                  size={24}
-                  color="#95f252"
-                />
-              </TouchableOpacity>
-            ) : (
+        <View style={image !== '' && { height: windowHeight * 0.35 }}>
+          {image === '' ? (
+            <TouchableOpacity
+              style={styles.avatarContainer}
+              onPress={() => checkPermissionAndTakePhoto()}
+            >
+              <Avatar.Text
+                size={(windowWidth * 40) / 100}
+                label={title ? title[0] : '?'}
+              />
+              <FontAwesome5
+                name="camera"
+                style={{
+                  alignSelf: 'flex-end',
+                  paddingLeft: 80,
+                  position: 'absolute',
+                }}
+                size={24}
+                color="#95f252"
+              />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('Image', {
+                  uri: image,
+                  deleteImage: deleteImage,
+                })
+              }
+            >
               <Image
                 source={{ uri: image }}
                 style={{ width: '100%', height: '100%' }}
                 resizeMode="cover"
               />
-            )}
-          </View>
-          <TextInput
-            label="Title"
-            mode="outlined"
-            theme={{ colors: { primary: 'black' } }}
-            value={title}
-            onChangeText={(text) => setTitle(text)}
-          />
-          <TextInput
-            label="Notes"
-            mode="outlined"
-            multiline={true}
-            numberOfLines={5}
-            theme={{ colors: { primary: 'black' } }}
-            value={notes}
-            onChangeText={(text) => setNotes(text)}
-          />
-          <View style={styles.buttonsContainer}>
-            <Subheading>Mark Position</Subheading>
-            <Switch
-              value={isSwitchGPSOn}
-              onValueChange={handleSwitchLocation}
-              color="purple"
-            />
-          </View>
-          {isSwitchGPSOn && (
-            <TouchableOpacity onPress={() => openGoogleMapsPosition()}>
-              <Text style={{ textDecorationLine: 'underline', marginTop: 12 }}>
-                Open on Google Maps
-              </Text>
             </TouchableOpacity>
           )}
-          <View style={styles.buttonsContainer}>
-            <Subheading>Remind me</Subheading>
-            <Switch
-              value={isSwitchRemindOn}
-              onValueChange={() => setIsSwitchRemindOn(!isSwitchRemindOn)}
-              color="purple"
-            />
+        </View>
+        <TextInput
+          label="Title*"
+          mode="outlined"
+          theme={{ colors: { primary: 'black' } }}
+          value={title}
+          onChangeText={(text) => setTitle(text)}
+        />
+        <TextInput
+          label="Notes"
+          mode="outlined"
+          multiline={true}
+          numberOfLines={5}
+          theme={{ colors: { primary: 'black' } }}
+          value={notes}
+          onChangeText={(text) => setNotes(text)}
+        />
+        <View style={styles.buttonsContainer}>
+          <Subheading>Mark Position</Subheading>
+          <Switch
+            value={isSwitchGPSOn}
+            onValueChange={async () => await handleSwitchLocation()}
+            color="purple"
+          />
+        </View>
+        {isSwitchGPSOn && (
+          <TouchableOpacity onPress={() => openGoogleMapsPosition()}>
+            <Text style={{ textDecorationLine: 'underline', marginTop: 12 }}>
+              Open on Google Maps
+            </Text>
+          </TouchableOpacity>
+        )}
+        <View style={styles.buttonsContainer}>
+          <Subheading>Remind me</Subheading>
+          <Switch
+            value={isSwitchRemindOn}
+            onValueChange={() => setIsSwitchRemindOn(!isSwitchRemindOn)}
+            color="purple"
+          />
+        </View>
+        {isSwitchRemindOn && (
+          <View style={styles.dateContainer}>
+            <TouchableOpacity
+              style={{ width: '45%' }}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <TextInput
+                value={dateRemind}
+                label="Select Date"
+                dense
+                disabled={true}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ width: '45%' }}
+              onPress={() => setShowHourPicker(true)}
+            >
+              <TextInput
+                value={hourRemind}
+                label="Select Hour"
+                dense
+                disabled={true}
+              />
+            </TouchableOpacity>
           </View>
-          {isSwitchRemindOn && (
-            <View style={styles.dateContainer}>
-              <TouchableOpacity
-                style={{ width: '45%' }}
-                onPress={() => setShowDatePicker(true)}
-              >
-                <TextInput
-                  value={dateRemind}
-                  label="Select Date"
-                  dense
-                  disabled={true}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{ width: '45%' }}
-                onPress={() => setShowHourPicker(true)}
-              >
-                <TextInput
-                  value={hourRemind}
-                  label="Select Hour"
-                  dense
-                  disabled={true}
-                />
-              </TouchableOpacity>
-            </View>
-          )}
-          {showDatePicker && (
-            <DateTimePicker
-              testID="datePicker"
-              mode="date"
-              value={new Date()}
-              display="default"
-              onChange={handleDateRemindChange}
-            />
-          )}
-          {showHourPicker && (
-            <DateTimePicker
-              testID="timePicker"
-              mode="time"
-              value={new Date()}
-              display="default"
-              onChange={handleHourRemindChange}
-            />
-          )}
+        )}
+        {showDatePicker && (
+          <DateTimePicker
+            testID="datePicker"
+            mode="date"
+            value={new Date()}
+            display="default"
+            onChange={handleDateRemindChange}
+          />
+        )}
+        {showHourPicker && (
+          <DateTimePicker
+            testID="timePicker"
+            mode="time"
+            value={new Date()}
+            display="default"
+            onChange={handleHourRemindChange}
+          />
+        )}
+          <Snackbar
+            visible={snackBarVisible}
+            onDismiss={() => setSnackBarVisible(false)}
+            action={{
+              label: 'Undo',
+              onPress: () => {
+                setSnackBarVisible(false);
+              },
+            }}
+          >
+            {snackBarMessage}
+          </Snackbar>
       </ScrollView>
     </KeyboardAvoidingView>
   );
