@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,10 +6,10 @@ import {
   Image,
   Dimensions,
   SafeAreaView,
-} from "react-native";
+} from 'react-native';
 
-const windowWidth = Dimensions.get("window").width;
-const windowHeight = Dimensions.get("window").height;
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 const Index: React.FunctionComponent<{
   title: string;
@@ -35,8 +35,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: windowWidth,
-    height: "20%",
-    flexDirection: "row",
+    height: '20%',
+    flexDirection: 'row',
     marginVertical: 10,
     marginHorizontal: 10,
   },
@@ -46,19 +46,19 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   imageContainer: {
-    width: '30%'
+    width: '30%',
   },
   title: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   text: {
     fontSize: 14,
-    color: "grey",
+    color: 'grey',
   },
   image: {
     width: '100%',
-    height: "100%",
+    height: '100%',
     borderRadius: 20,
   },
 });
