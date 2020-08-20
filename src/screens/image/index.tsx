@@ -5,7 +5,7 @@ import { RootStackParamList } from '../../navigation';
 import { RouteProp } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 
-import FloatingButton from "../../components/floatingActionButton";
+import FloatingButton from '../../components/floatingActionButton';
 
 type ProfileScreenRouteProp = RouteProp<RootStackParamList, 'Image'>;
 
@@ -21,11 +21,10 @@ type Props = {
 };
 
 const index: React.FunctionComponent<Props> = ({ route, navigation }) => {
-
   const handleDeleteImage = () => {
-    route.params.deleteImage("");
+    route.params.deleteImage('');
     navigation.goBack();
-  }
+  };
 
   return (
     <View>
@@ -34,7 +33,11 @@ const index: React.FunctionComponent<Props> = ({ route, navigation }) => {
         style={{ width: '100%', height: '100%' }}
         resizeMode="contain"
       />
-      <FloatingButton color="red" onPress={() => handleDeleteImage()} icon={<AntDesign name="delete" size={24} color="#fff" />} />
+      <FloatingButton
+        color="red"
+        onPress={() => handleDeleteImage()}
+        icon={<AntDesign name="delete" size={24} color="#fff" />}
+      />
     </View>
   );
 };
