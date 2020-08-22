@@ -287,18 +287,18 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
             onChange={handleHourRemindChange}
           />
         )}
-          <Snackbar
-            visible={snackBarVisible}
-            onDismiss={() => setSnackBarVisible(false)}
-            action={{
-              label: 'Undo',
-              onPress: () => {
-                setSnackBarVisible(false);
-              },
-            }}
-          >
-            {snackBarMessage}
-          </Snackbar>
+        <Snackbar
+          visible={snackBarVisible}
+          onDismiss={() => setSnackBarVisible(false)}
+          action={{
+            label: 'Undo',
+            onPress: () => {
+              setSnackBarVisible(false);
+            },
+          }}
+        >
+          {snackBarMessage}
+        </Snackbar>
       </ScrollView>
     </KeyboardAvoidingView>
   );
