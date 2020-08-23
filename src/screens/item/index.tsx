@@ -13,14 +13,23 @@ import {
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation';
 import * as ImagePicker from 'expo-image-picker';
-import { TextInput, Subheading, Switch } from 'react-native-paper';
-import { Avatar, Snackbar } from 'react-native-paper';
-import Item from '../../models/item/Item';
+import { TextInput, Subheading, Switch, Snackbar } from 'react-native-paper';
+import { Avatar } from 'react-native-paper';
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Moment from 'moment';
 import * as Location from 'expo-location';
+import {
+  addImage,
+  changeTitle,
+  changeNotes,
+  changeDateRemind,
+  changeHourRemind,
+  changeLatLng,
+} from '../../redux/item/actions';
+import { useSelector, useDispatch } from 'react-redux';
+import { ItemsInterface } from '../../redux/item/reducer';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -35,19 +44,36 @@ type Props = {
 };
 
 const index: React.FunctionComponent<Props> = ({ navigation }) => {
-  const [title, setTitle] = useState<string>('');
-  const [image, setImage] = useState<string>('');
-  const [notes, setNotes] = useState<string>('');
-  const [dateRemind, setDateRemind] = useState('');
-  const [hourRemind, setHourRemind] = useState('');
-  const [latLng, setLatLng] = useState<string>('');
+  const title = useSelector<ItemsInterface, ItemsInterface['title']>(
+    (state) => state.title
+  );
+  const image = useSelector<ItemsInterface, ItemsInterface['image']>(
+    (state) => state.image
+  );
+  const notes = useSelector<ItemsInterface, ItemsInterface['notes']>(
+    (state) => state.notes
+  );
+  const showImage = useSelector<ItemsInterface, ItemsInterface['showImage']>(
+    (state) => state.showImage
+  );
+  const dateRemind = useSelector<ItemsInterface, ItemsInterface['dateRemind']>(
+    (state) => state.dateRemind
+  );
+  const hourRemind = useSelector<ItemsInterface, ItemsInterface['hourRemind']>(
+    (state) => state.hourRemind
+  );
+  const latLng = useSelector<ItemsInterface, ItemsInterface['latLng']>(
+    (state) => state.latLng
+  );
 
-  const [isSwitchGPSOn, setIsSwitchGPSOn] = React.useState(false);
-  const [isSwitchRemindOn, setIsSwitchRemindOn] = React.useState(false);
+  const dispatch = useDispatch();
+
+  const [snackBarOpen, setSnackBarOpen] = useState(false);
+  const [snackBarMessage, setSnackBarMessage] = useState('');
+  const [isSwitchGPSOn, setIsSwitchGPSOn] = useState(false);
+  const [isSwitchRemindOn, setIsSwitchRemindOn] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showHourPicker, setShowHourPicker] = useState(false);
-  const [snackBarVisible, setSnackBarVisible] = useState(false);
-  const [snackBarMessage, setSnackBarMessage] = useState('');
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -72,16 +98,23 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
     latLng,
     isSwitchGPSOn,
     isSwitchRemindOn,
-    snackBarMessage,
   ]);
 
   const saveItem = () => {
+    if (!title) {
+      setSnackBarMessage('Title is required!');
+      setSnackBarOpen(true);
+      return;
+    }
     if (isSwitchGPSOn && latLng === '') {
-      console.log('deu ruim no GPS');
+      setSnackBarMessage('GPS beeing selected');
+      setSnackBarOpen(true);
       return;
     }
     if (isSwitchRemindOn && (hourRemind === '' || dateRemind === '')) {
-      setSnackBarVisible(true);
+      setSnackBarMessage('Select Date/Hour');
+      setSnackBarOpen(true);
+      return;
     }
     console.log(title, image, notes, dateRemind, hourRemind, latLng);
     // navigation.goBack();
@@ -101,15 +134,15 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
       };
       const cameraResponse = await ImagePicker.launchCameraAsync(options);
       if (!cameraResponse.cancelled) {
-        setImage(cameraResponse.uri);
+        dispatch(addImage(cameraResponse.uri));
       }
     }
   };
 
-  const handleSwitchLocation = async () => {
-    if (isSwitchGPSOn) {
+  const handleSwitchLocation = async (event: any) => {
+    if (!event) {
       setIsSwitchGPSOn(false);
-      setLatLng('');
+      dispatch(changeLatLng(''));
     } else {
       setIsSwitchGPSOn(true);
       await checkPermissionAndGetLocation();
@@ -118,10 +151,11 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
 
   const checkPermissionAndGetLocation = async () => {
     let { status } = await Location.requestPermissionsAsync();
+
     if (status === 'granted') {
-      await Location.getCurrentPositionAsync().then((location) => {
+      Location.getCurrentPositionAsync().then((location) => {
         const latituteLongitude = `${location.coords.latitude},${location.coords.longitude}`;
-        setLatLng(latituteLongitude);
+        dispatch(changeLatLng(latituteLongitude));
       });
     }
   };
@@ -134,13 +168,27 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
     Linking.openURL(url);
   };
 
+  const handleSwitchDate = (event: boolean) => {
+    if (!event) {
+      dispatch(changeDateRemind(''));
+      dispatch(changeHourRemind(''));
+      setIsSwitchRemindOn(false);
+      return;
+    }
+    setIsSwitchRemindOn(true);
+  };
+
   const handleDateRemindChange = (date: any) => {
     if (date.type === 'dismissed') {
       setShowDatePicker(false);
     }
     if (date.type === 'set') {
       setShowDatePicker(false);
-      setDateRemind(Moment(date.nativeEvent.timestamp).format('DD/MM/YYYY'));
+      dispatch(
+        changeDateRemind(
+          Moment(date.nativeEvent.timestamp).format('DD/MM/YYYY')
+        )
+      );
     }
   };
 
@@ -150,12 +198,10 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
     }
     if (date.type === 'set') {
       setShowHourPicker(false);
-      setHourRemind(Moment(date.nativeEvent.timestamp).format('HH:mm'));
+      dispatch(
+        changeHourRemind(Moment(date.nativeEvent.timestamp).format('HH:mm'))
+      );
     }
-  };
-
-  const deleteImage = () => {
-    setImage('');
   };
 
   return (
@@ -163,11 +209,12 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
       style={{
         marginHorizontal: 10,
         marginVertical: 10,
+        flexGrow: 1,
       }}
     >
       <ScrollView>
-        <View style={image !== '' && { height: windowHeight * 0.35 }}>
-          {image === '' ? (
+        <View style={showImage && { height: windowHeight * 0.35 }}>
+          {!showImage ? (
             <TouchableOpacity
               style={styles.avatarContainer}
               onPress={() => checkPermissionAndTakePhoto()}
@@ -188,14 +235,7 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
               />
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate('Image', {
-                  uri: image,
-                  deleteImage: deleteImage,
-                })
-              }
-            >
+            <TouchableOpacity onPress={() => navigation.navigate('Image')}>
               <Image
                 source={{ uri: image }}
                 style={{ width: '100%', height: '100%' }}
@@ -209,7 +249,7 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
           mode="outlined"
           theme={{ colors: { primary: 'black' } }}
           value={title}
-          onChangeText={(text) => setTitle(text)}
+          onChangeText={(text) => dispatch(changeTitle(text))}
         />
         <TextInput
           label="Notes"
@@ -218,13 +258,13 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
           numberOfLines={5}
           theme={{ colors: { primary: 'black' } }}
           value={notes}
-          onChangeText={(text) => setNotes(text)}
+          onChangeText={(text) => dispatch(changeNotes(text))}
         />
         <View style={styles.buttonsContainer}>
           <Subheading>Mark Position</Subheading>
           <Switch
             value={isSwitchGPSOn}
-            onValueChange={async () => await handleSwitchLocation()}
+            onValueChange={(event) => handleSwitchLocation(event)}
             color="purple"
           />
         </View>
@@ -239,7 +279,7 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
           <Subheading>Remind me</Subheading>
           <Switch
             value={isSwitchRemindOn}
-            onValueChange={() => setIsSwitchRemindOn(!isSwitchRemindOn)}
+            onValueChange={(event) => handleSwitchDate(event)}
             color="purple"
           />
         </View>
@@ -287,19 +327,20 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
             onChange={handleHourRemindChange}
           />
         )}
-        <Snackbar
-          visible={snackBarVisible}
-          onDismiss={() => setSnackBarVisible(false)}
-          action={{
-            label: 'Undo',
-            onPress: () => {
-              setSnackBarVisible(false);
-            },
-          }}
-        >
-          {snackBarMessage}
-        </Snackbar>
       </ScrollView>
+      <Snackbar
+        visible={snackBarOpen}
+        onDismiss={() => setSnackBarOpen(false)}
+        duration={3000}
+        action={{
+          label: 'Close',
+          onPress: () => {
+            setSnackBarOpen(false);
+          },
+        }}
+      >
+        {snackBarMessage}
+      </Snackbar>
     </KeyboardAvoidingView>
   );
 };

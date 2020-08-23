@@ -10,7 +10,7 @@ import ImageScreen from '../screens/image';
 export type RootStackParamList = {
   MyList: undefined;
   Item: undefined;
-  Image: { uri: string; deleteImage: Function };
+  Image: undefined;
 };
 
 export const Navigation = () => {
