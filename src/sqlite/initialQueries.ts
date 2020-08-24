@@ -20,11 +20,14 @@ class InitialQueries {
 
             tx.executeSql(`
                 CREATE TABLE IF NOT EXISTS Items (
-                    id TEXT PRIMARY KEY,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     title TEXT DEFAULT '',
                     image TEXT DEFAULT '',
+                    hourRemind TEXT DEFAULT '',
+                    dateRemind TEXT DEFAULT '',
                     type  INTEGER NOT NULL DEFAULT 1,
-                    notes TEXT DEFAULT ''
+                    notes TEXT DEFAULT '',
+                    latLng TEXT DEFAULT ''
                 ) WITHOUT ROWID
             `)
         });

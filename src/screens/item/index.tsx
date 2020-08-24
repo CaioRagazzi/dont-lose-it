@@ -30,6 +30,7 @@ import {
 } from '../../redux/item/actions';
 import { useSelector, useDispatch } from 'react-redux';
 import { ItemsInterface } from '../../redux/item/reducer';
+import ItemQueries from '../../sqlite/item/queries';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -116,7 +117,9 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
       setSnackBarOpen(true);
       return;
     }
-    console.log(title, image, notes, dateRemind, hourRemind, latLng);
+    console.log(title, image, hourRemind, dateRemind, notes, latLng);
+    const itemQueries = new ItemQueries();
+    itemQueries.insertItem(title, image, hourRemind, dateRemind, 1, notes, latLng) 
     // navigation.goBack();
     // const item = new Item(title, image, notes);
     // item.insertItem();
