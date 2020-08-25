@@ -11,11 +11,15 @@ class ItemQueries {
         this.dataBase.transaction((tx) => {
             tx.executeSql(`
                 INSERT INTO Items (title, image, hourRemind, dateRemind, type, notes, latLng) 
-                VALUES (?,?,?,?,?,?)
-            `, [title, image, hourRemind, dateRemind, type, notes, latLng], (resSucc) => {
-                console.log('resSucc', resSucc);
-            }, (err) => {
-                console.log('err', err);
+                VALUES (?,?,?,?,?,?,?)
+            `, [title, image, hourRemind, dateRemind, type, notes, latLng])
+        });
+    }
+
+    selectAllItems() {
+        return this.dataBase.transaction((tx) => {
+            tx.executeSql(`SELECT * FROM Items`, [], (_, result) => {
+                
             })
         });
     }

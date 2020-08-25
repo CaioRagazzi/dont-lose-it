@@ -7,6 +7,7 @@ import DropTables from '../../sqlite/dropTables';
 import List from '../../components/list';
 import { FloatingAction } from 'react-native-floating-action';
 import { RootStackParamList } from '../../navigation';
+import ItemQueries from '../../sqlite/item/queries';
 
 type ProfileScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -23,6 +24,8 @@ const Index: React.FunctionComponent<Props> = ({ navigation }) => {
     const dropTables = new DropTables();
     // dropTables.dropAllTables();
     initialQueries.createInitialTables();
+    const itemsQuery = new ItemQueries();
+    itemsQuery.selectAllItems();    
   }, []);
 
   const DATA = [

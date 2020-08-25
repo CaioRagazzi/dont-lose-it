@@ -28,7 +28,7 @@ class InitialQueries {
                     type  INTEGER NOT NULL DEFAULT 1,
                     notes TEXT DEFAULT '',
                     latLng TEXT DEFAULT ''
-                ) WITHOUT ROWID
+                )
             `)
         });
     }

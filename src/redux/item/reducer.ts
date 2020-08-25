@@ -1,6 +1,6 @@
 import { ADD_IMAGE, CHANGE_TITLE, CHANGE_NOTES, REMOVE_IMAGE, CHANGE_DATEREMIND, CHANGE_HOURREMIND, CHANGE_LATLNG } from "./actionTypes";
 
-export interface ItemsInterface {
+export interface ItemInterface {
     image: string
     showImage: boolean
     title: string
@@ -11,7 +11,7 @@ export interface ItemsInterface {
     type: number
 }
 
-const initialState: ItemsInterface = {
+const initialState: ItemInterface = {
     image: "",
     showImage: false,
     title: "",
@@ -22,7 +22,7 @@ const initialState: ItemsInterface = {
     type: 1,
 }
 
-export function reducer(state: ItemsInterface = initialState, action: any) {
+export function reducer(state: ItemInterface = initialState, action: any) {
     switch (action.type) {
         case ADD_IMAGE:
             return {

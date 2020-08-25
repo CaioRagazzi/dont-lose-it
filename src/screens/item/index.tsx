@@ -29,7 +29,7 @@ import {
   changeLatLng,
 } from '../../redux/item/actions';
 import { useSelector, useDispatch } from 'react-redux';
-import { ItemsInterface } from '../../redux/item/reducer';
+import { ItemInterface } from '../../redux/item/reducer';
 import ItemQueries from '../../sqlite/item/queries';
 
 const windowWidth = Dimensions.get('window').width;
@@ -45,25 +45,25 @@ type Props = {
 };
 
 const index: React.FunctionComponent<Props> = ({ navigation }) => {
-  const title = useSelector<ItemsInterface, ItemsInterface['title']>(
+  const title = useSelector<ItemInterface, ItemInterface['title']>(
     (state) => state.title
   );
-  const image = useSelector<ItemsInterface, ItemsInterface['image']>(
+  const image = useSelector<ItemInterface, ItemInterface['image']>(
     (state) => state.image
   );
-  const notes = useSelector<ItemsInterface, ItemsInterface['notes']>(
+  const notes = useSelector<ItemInterface, ItemInterface['notes']>(
     (state) => state.notes
   );
-  const showImage = useSelector<ItemsInterface, ItemsInterface['showImage']>(
+  const showImage = useSelector<ItemInterface, ItemInterface['showImage']>(
     (state) => state.showImage
   );
-  const dateRemind = useSelector<ItemsInterface, ItemsInterface['dateRemind']>(
+  const dateRemind = useSelector<ItemInterface, ItemInterface['dateRemind']>(
     (state) => state.dateRemind
   );
-  const hourRemind = useSelector<ItemsInterface, ItemsInterface['hourRemind']>(
+  const hourRemind = useSelector<ItemInterface, ItemInterface['hourRemind']>(
     (state) => state.hourRemind
   );
-  const latLng = useSelector<ItemsInterface, ItemsInterface['latLng']>(
+  const latLng = useSelector<ItemInterface, ItemInterface['latLng']>(
     (state) => state.latLng
   );
 
@@ -120,9 +120,7 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
     console.log(title, image, hourRemind, dateRemind, notes, latLng);
     const itemQueries = new ItemQueries();
     itemQueries.insertItem(title, image, hourRemind, dateRemind, 1, notes, latLng) 
-    // navigation.goBack();
-    // const item = new Item(title, image, notes);
-    // item.insertItem();
+    navigation.goBack();
   };
 
   const checkPermissionAndTakePhoto = async () => {
