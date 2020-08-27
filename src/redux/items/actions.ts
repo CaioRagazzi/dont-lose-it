@@ -1,8 +1,9 @@
 import { GET_ALL } from "./actionTypes";
+import { ItemsInterface } from "./reducer";
 
-export function addImage(uri: string) {
+export function getAll(items: ItemsInterface) {
     return {
         type: GET_ALL,
-        payload: { image: uri },
+        payload: { items: items },
     }
 }

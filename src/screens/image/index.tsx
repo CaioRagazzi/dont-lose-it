@@ -4,13 +4,13 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation';
 import { RouteProp } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
-import storeItem from '../../redux/item/store';
+import storeItem from '../../redux/store';
 
 import FloatingButton from '../../components/floatingActionButton';
 import { ADD_IMAGE } from '../../redux/item/actionTypes';
 import { addImage, removeImage } from '../../redux/item/actions';
 import { useSelector, useDispatch } from 'react-redux';
-import { ItemsInterface } from '../../redux/item/reducer';
+import { ItemInterface } from '../../redux/item/reducer';
 
 type ProfileScreenRouteProp = RouteProp<RootStackParamList, 'Image'>;
 
@@ -25,7 +25,7 @@ type Props = {
 };
 
 const index: React.FunctionComponent<Props> = ({ route, navigation }) => {
-  const image = useSelector<ItemsInterface, ItemsInterface["image"]>((state) => state.image);
+  const image = useSelector<ItemInterface, ItemInterface["image"]>((state) => state.image);
   const imageDispatch = useDispatch()
 
   const handleDeleteImage = () => {

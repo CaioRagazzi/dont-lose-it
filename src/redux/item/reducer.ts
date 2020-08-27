@@ -22,7 +22,7 @@ const initialState: ItemInterface = {
     type: 1,
 }
 
-export function reducer(state: ItemInterface = initialState, action: any) {
+export function ItemReducer(state: ItemInterface = initialState, action: any) {
     switch (action.type) {
         case ADD_IMAGE:
             return {

@@ -117,7 +117,6 @@ const index: React.FunctionComponent<Props> = ({ navigation }) => {
       setSnackBarOpen(true);
       return;
     }
-    console.log(title, image, hourRemind, dateRemind, notes, latLng);
     const itemQueries = new ItemQueries();
     itemQueries.insertItem(title, image, hourRemind, dateRemind, 1, notes, latLng) 
     navigation.goBack();

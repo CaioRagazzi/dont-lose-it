@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
 import InitialQueries from '../../sqlite/initialQueries';
@@ -7,7 +7,10 @@ import DropTables from '../../sqlite/dropTables';
 import List from '../../components/list';
 import { FloatingAction } from 'react-native-floating-action';
 import { RootStackParamList } from '../../navigation';
-import ItemQueries from '../../sqlite/item/queries';
+import * as SQLite from 'expo-sqlite';
+import { ItemsInterface, ItemsReducer } from '../../redux/items/reducer';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAll } from '../../redux/items/actions';
 
 type ProfileScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -19,14 +22,35 @@ type Props = {
 };
 
 const Index: React.FunctionComponent<Props> = ({ navigation }) => {
+  const dispatch = useDispatch();
+
+  const [database, setDatabase] = useState<SQLite.WebSQLDatabase>();
+  const items = useSelector<ItemsInterface, ItemsInterface['items']>(
+    (state) => state.items
+  );
+
   useEffect(() => {
     const initialQueries = new InitialQueries();
     const dropTables = new DropTables();
     // dropTables.dropAllTables();
-    initialQueries.createInitialTables();
-    const itemsQuery = new ItemQueries();
-    itemsQuery.selectAllItems();    
+    setDatabase(SQLite.openDatabase('DontForgetIt'));
+
+    // getAllItems();
   }, []);
+
+  const getAllItems = () => {
+    database?.transaction((tx) => {
+      tx.executeSql(`SELECT * FROM Items`, [], (_, result) => {
+        const items: ItemsInterface = {
+          items: [],
+        };
+        for (let index = 0; index < result.rows.length; index++) {
+          items.items.push(result.rows.item(index));
+        }
+        dispatch(getAll(items));
+      });
+    });
+  };
 
   const DATA = [
     {
@@ -78,6 +102,9 @@ const Index: React.FunctionComponent<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <List data={DATA} />
+      {items.forEach((item) => {
+        return <Text> { item.title } </Text>
+      })}
       <FloatingAction
         actions={actions}
         onPressItem={(name) => {
