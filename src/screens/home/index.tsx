@@ -103,7 +103,7 @@ const Index: React.FunctionComponent<Props> = ({ navigation }) => {
     <View style={styles.container}>
       <List data={DATA} />
       {items.forEach((item) => {
-        return <Text> { item.title } </Text>
+        return <Text> {item.title} </Text>;
       })}
       <FloatingAction
         actions={actions}
